@@ -24,3 +24,5 @@ create table matches (id serial primary key, player1 integer references players,
 
 -- THIS AREA RESERVED FOR CREATING VIEWS
 
+create view listofwins as select matches.winner, count(matches.id) as numberofwins from matches group by matches.winner order by numberofwins desc;
+create view formalrankingtable as select players.id, players.name, listofwins.numberofwins from players left join listofwins on players.id = listofwins.winner;
