@@ -60,8 +60,7 @@ def playerStandings():
     """
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    c.execute("
-        ")
+    c.execute("select * from finalrankingtable")
     DB.close()
 
 def reportMatch(winner, loser):

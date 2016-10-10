@@ -23,8 +23,9 @@ create table players (id serial primary key, name text);
 create table matches (id serial primary key, player1 integer references players, player2 integer references players, winner integer references players);
 
 -- THIS AREA RESERVED FOR CREATING VIEWS
-
-create view listofwins as select matches.winner, count(matches.id) as numberofwins from matches group by matches.winner order by numberofwins desc;
-create view formalrankingtableminusmatchesplayed as select players.id, players.name, listofwins.numberofwins as numberofwins from players left join listofwins on players.id = listofwins.winner;
-create view matchesplayed as select players.id as id, count(*) as numberofmatchesplayed from players LEFT JOIN matches on players.id = matches.player1 OR players.id = matches.player2 group by players.id;
-create view finalrankingtable as select formalrankingtableminusmatchesplayed.id, formalrankingtableminusmatchesplayed.name, formalrankingtableminusmatchesplayed.numberofwins, matchesplayed.numberofmatchesplayed from formalrankingtableminusmatchesplayed, matchesplayed where formalrankingtableminusmatchesplayed.id = matchesplayed.id order by numberofwins DESC;
+drop view if exists listofwins;
+create view listofwins as select players.id, players.name, count(matches.id) as numberofwins from players left join matches on matches.winner = players.id group by matches.winner, players.id, players.name order by numberofwins desc;
+drop view if exists matchesplayed;
+create view matchesplayed as select players.id as id, count(*) as numberofmatchesplayed from players LEFT JOIN matches on players.id = matches.player1 OR players.id = matches.player2 group by players.id order by players.id;
+drop view if exists finalrankingtable;
+create view finalrankingtable as select listofwins.id, listofwins.name, listofwins.numberofwins as wins, matchesplayed.numberofmatchesplayed as matches from listofwins, matchesplayed where listofwins.id = matchesplayed.id order by numberofwins DESC;
