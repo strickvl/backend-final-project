@@ -39,8 +39,9 @@ def countPlayers():
     db, cursor = connect()
     
     query = "select count(*) from players;"
-    cursor.execute(query)
-
+    count = cursor.execute(query)
+    return count
+    
     db.commit()
     db.close()
 
