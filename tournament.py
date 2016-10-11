@@ -6,30 +6,43 @@
 import psycopg2
 
 
-def connect():
-    """Connect to the PostgreSQL database.  Returns a database connection."""
-    return psycopg2.connect("dbname=tournament")
+def connect(database_name="tournament"):
+    try:
+        db = psycopg2.connect("dbname={}".format(database_name))
+        cursor = db.cursor()
+        return db, cursor
+    except:
+        print("<error message>")
 
 def deleteMatches():
     """Remove all the match records from the database."""
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    c.execute("delete from matches")
-    DB.close()
+    db, cursor = connect()
+    
+    query = "delete from matches;"
+    cursor.execute(query)
+
+    db.commit()
+    db.close()
 
 def deletePlayers():
     """Remove all the player records from the database."""
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    c.execute("delete from players")
-    DB.close()
+    db, cursor = connect()
+    
+    query = "delete from players;"
+    cursor.execute(query)
+
+    db.commit()
+    db.close()
 
 def countPlayers():
     """Returns the number of players currently registered."""
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    c.execute("select count(*) from players")
-    DB.close()
+    db, cursor = connect()
+    
+    query = "select count(*) from players;"
+    cursor.execute(query)
+
+    db.commit()
+    db.close()
 
 def registerPlayer(name):
     """Adds a player to the tournament database.
@@ -40,10 +53,14 @@ def registerPlayer(name):
     Args:
       name: the player's full name (need not be unique).
     """
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    c.execute("insert into players (name) values (%s)", (name,))
-    DB.close()
+    db, cursor = connect()
+
+    query = "INSERT INTO players (name) VALUES (%s);"
+    parameter = (name,)
+    cursor.execute(query, parameter)
+
+    db.commit()
+    db.close()
 
 def playerStandings():
     """Returns a list of the players and their win records, sorted by wins.
@@ -58,10 +75,13 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    c.execute("select * from finalrankingtable")
-    DB.close()
+    db, cursor = connect()
+    
+    query = "select * from finalrankingtable;"
+    cursor.execute(query)
+
+    db.commit()
+    db.close()
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -70,11 +90,13 @@ def reportMatch(winner, loser):
       winner:  the id number of the player who won
       loser:  the id number of the player who lost
     """
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    c.execute("insert into matches (player1, player2, winner) values (loser, winner, winner)")
-    DB.close()
- 
+    db, cursor = connect()
+    
+    query = "insert into matches (player1, player2, winner) values (%s, %s, %s)", (loser, winner, winner)
+    cursor.execute(query)
+
+    db.commit()
+    db.close()
  
 def swissPairings():
     """Returns a list of pairs of players for the next round of a match.
