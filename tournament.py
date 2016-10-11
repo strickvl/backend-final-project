@@ -72,10 +72,7 @@ def reportMatch(winner, loser):
     """
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    c.execute("
-
-
-        ")
+    c.execute("insert into matches (player1, player2, winner) values (loser, winner, winner)")
     DB.close()
  
  
@@ -96,10 +93,10 @@ def swissPairings():
     """
     DB = psycopg2.connect("dbname=tournament")
     c = DB.cursor()
-    c.execute("
-
-
-        ")
+    swissPairingslist = []
+    ordermarker = 1
+    while ordermarker < c.execute("select count(*) from players;"):
+        swissPairingslist.append(c.execute("select id, name from finalrankingtable limit " + ordermarker+";"), c.execute("select id, name from finalrankingtable limit " + ordermarker+1+";"))
+        ordermarker=ordermarker*2
+    return swissPairingslist
     DB.close()
-
-
