@@ -30,16 +30,15 @@ create table players (
 -- drop table if exists matches;
 create table matches (
 	id serial primary key,
-	player1 integer references players(id),
-	player2 integer references players(id), 
-	winner integer references players(id)
+	winner integer references players(id),
+	loser integer references players(id)
 	);
 
 -- creates a view specifying how many wins all the players have had
 create view listofwins as select players.id, players.name, count(matches.id) as numberofwins from players left join matches on matches.winner = players.id group by matches.winner, players.id, players.name order by numberofwins desc;
 
 -- creates a view specifying how many matches all the players have played
-create view matchesplayed as select players.id as id, count(*) as numberofmatchesplayed from players LEFT JOIN matches on players.id = matches.player1 OR players.id = matches.player2 group by players.id order by players.id;
+create view matchesplayed as select players.id as id, count(*) as numberofmatchesplayed from players LEFT JOIN matches on players.id = matches.winner OR players.id = matches.loser group by players.id order by players.id;
 
 -- creates a view combining listofwins and matches played to generate the final ranking table
 -- this fulfills the requirements for the function playerStandings
