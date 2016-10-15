@@ -39,8 +39,11 @@ def countPlayers():
     db, cursor = connect()
     
     query = "select count(*) from players;"
+    cursor.execute(query)
     row = cursor.fetchone()
     countValue = row[0]
+    cursor.close()
+    db.close()
     return countValue
         
     db.commit()
@@ -78,12 +81,12 @@ def playerStandings():
         matches: the number of matches the player has played
     """
     db, cursor = connect()
-    
+
     query = "select * from finalrankingtable;"
     cursor.execute(query)
-
-    db.commit()
+    standings = cursor.fetchall()
     db.close()
+    return standings
 
 def reportMatch(winner, loser):
     """Records the outcome of a single match between two players.
@@ -94,8 +97,8 @@ def reportMatch(winner, loser):
     """
     db, cursor = connect()
     
-    query = "insert into matches (winner, loser) values (%s, %s)", (winner, loser)
-    cursor.execute(query)
+    query = "insert into matches (winner, loser) values (%s, %s)"
+    cursor.execute(query, (winner, loser))
 
     db.commit()
     db.close()
@@ -115,12 +118,17 @@ def swissPairings():
         id2: the second player's unique id
         name2: the second player's name
     """
-    DB = psycopg2.connect("dbname=tournament")
-    c = DB.cursor()
-    swissPairingslist = []
-    ordermarker = 1
-    while ordermarker < c.execute("select count(*) from players;"):
-        swissPairingslist.append(c.execute("select id, name from finalrankingtable limit " + ordermarker+";"), c.execute("select id, name from finalrankingtable limit " + ordermarker+1+";"))
-        ordermarker=ordermarker*2
-    return swissPairingslist
-    DB.close()
+    # retreives player standings i.e. id, player, wins, matches
+    standings = playerStandings()
+    # pairs for next round are stored in this array.
+    next_round = []
+    # iterates on the standings results. As the results are already in
+    # descending order, the pairs can be made using adjacent players, hence the
+    # loop is set to interval of 2 to skip to player for next pair
+    # in every iteration.
+    for i in range(0, len(standings), 2):
+        # each iteration picks player attributes (id, name) of current row
+        # and next row and adds in the next_round array.
+        next_round.append((standings[i][0], standings[i][1], standings[i+1][0], standings[i+1][1]))
+    # pairs for next round are returned from here.
+    return next_round
