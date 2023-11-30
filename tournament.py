@@ -8,7 +8,7 @@ import psycopg2
 
 def connect(database_name="tournament"):
     try:
-        db = psycopg2.connect("dbname={}".format(database_name))
+        db = psycopg2.connect(f"dbname={database_name}")
         cursor = db.cursor()
         return db, cursor
     except:
@@ -37,7 +37,7 @@ def deletePlayers():
 def countPlayers():
     """Returns the number of players currently registered."""
     db, cursor = connect()
-    
+
     query = "select count(*) from players;"
     cursor.execute(query)
     row = cursor.fetchone()
@@ -45,9 +45,6 @@ def countPlayers():
     cursor.close()
     db.close()
     return countValue
-        
-    db.commit()
-    db.close()
 
 def registerPlayer(name):
     """Adds a player to the tournament database.
@@ -120,15 +117,12 @@ def swissPairings():
     """
     # retreives player standings i.e. id, player, wins, matches
     standings = playerStandings()
-    # pairs for next round are stored in this array.
-    next_round = []
-    # iterates on the standings results. As the results are already in
-    # descending order, the pairs can be made using adjacent players, hence the
-    # loop is set to interval of 2 to skip to player for next pair
-    # in every iteration.
-    for i in range(0, len(standings), 2):
-        # each iteration picks player attributes (id, name) of current row
-        # and next row and adds in the next_round array.
-        next_round.append((standings[i][0], standings[i][1], standings[i+1][0], standings[i+1][1]))
-    # pairs for next round are returned from here.
-    return next_round
+    return [
+        (
+            standings[i][0],
+            standings[i][1],
+            standings[i + 1][0],
+            standings[i + 1][1],
+        )
+        for i in range(0, len(standings), 2)
+    ]
